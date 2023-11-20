@@ -1,0 +1,8 @@
+nume fisier: Directory/Regular.txt
+dimensiune: 20
+identificatorul utilizatorului: 2053
+timpul ultimei modificari: 2023-11-12 09:34:15
+contorul de legaturi: 1
+drepturi de acces user: rw- 
+drepturi de acces grup: rw- 
+drepturi de acces altii: r-- 

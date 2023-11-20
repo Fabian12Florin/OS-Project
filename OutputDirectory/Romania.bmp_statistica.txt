@@ -1,0 +1,10 @@
+nume fisier: Directory/Romania.bmp
+inaltime: 409
+lungime: 612
+dimensiune: 751062
+identificatorul utilizatorului: 2053
+timpul ultimei modificari: 2023-11-11 20:26:11
+contorul de legaturi: 1
+drepturi de acces user: rw- 
+drepturi de acces grup: rw- 
+drepturi de acces altii: rw- 

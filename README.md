@@ -9,8 +9,12 @@ Student name: Dogaru Fabian-Florin
 
 Download the zip file for this project and open it in any IDE.
 
-Open a new a terminal and run this command
+Open a new a terminal inside the IDE and run this command
 
 ```bash
-./fis1 Directory
+gcc -Wall -o fis1 fis1.c -lm
+./fis1 Directory OutputDirectory
 ```
+## Don't be hungry!
+![Spaghetti photo not loaded :(](ImagesReadMe/Spaghetti.jpeg)
+I know this is one of the most spaghetti-code ever created. I promise I will refactor and will divide the code into multiples libraries.

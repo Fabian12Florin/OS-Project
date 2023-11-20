@@ -1,0 +1,6 @@
+nume fisier: Directory/RegularLink
+dimensiune: 11
+Fisier target: dimensiune: 20
+drepturi de acces user: rwx 
+drepturi de acces grup: rwx 
+drepturi de acces altii: rwx 

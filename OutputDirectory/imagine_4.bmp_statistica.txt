@@ -1,0 +1,10 @@
+nume fisier: Directory/imagine_4.bmp
+inaltime: 1309
+lungime: 762
+dimensiune: 2995046
+identificatorul utilizatorului: 2053
+timpul ultimei modificari: 2023-11-17 09:41:28
+contorul de legaturi: 1
+drepturi de acces user: rw- 
+drepturi de acces grup: rw- 
+drepturi de acces altii: r-- 
