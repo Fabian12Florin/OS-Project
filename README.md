@@ -20,7 +20,7 @@ gcc -Wall -o fis1 fis1.c -lm
   src="ImagesReadMe/Spaghetti.jpeg"
   alt="Spaghetti photo not loaded :("
   title="Monster"
-  style="display: inline-block; max-width: 300px; margin-left: auto; margin-right: auto; width: 50%;">
+  style="display: inline-block; margin-left: auto; margin-right: auto; width: 50%;">
 
 
 I know this is one of the most spaghetti-code ever created. I promise I will refactor and will divide the code into multiples libraries.
