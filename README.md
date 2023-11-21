@@ -1,6 +1,6 @@
 # File Information
 
-Project for Operating System lab where we need to make a program that extract some of the information of a file (BMP, Link, Directory or just a regular file)
+Project for Operating System lab where we need to make a program that extracts some of the information of a file (BMP, Link, Directory or just a regular file)
 
 Student name: Dogaru Fabian-Florin
 
