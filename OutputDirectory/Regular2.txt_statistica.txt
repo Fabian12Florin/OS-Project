@@ -1,7 +1,7 @@
-nume fisier: Directory/Regular.txt
-dimensiune: 64
+nume fisier: Directory/Regular2.txt
+dimensiune: 188
 identificatorul utilizatorului: 2053
-timpul ultimei modificari: 2023-12-06 14:34:09
+timpul ultimei modificari: 2023-12-06 16:15:47
 contorul de legaturi: 1
 drepturi de acces user: rw- 
 drepturi de acces grup: rw- 

@@ -14,11 +14,9 @@
 #include <math.h>
 
 #define BUFFSIZE 512
-#define LIMITPROCESS 100
-
 
 void checkNrOfArguments(int number0fArguments){
-  if(number0fArguments != 3){
+  if(number0fArguments != 4){
     perror("You must provide only two arguments!");
     exit(10);
   }
@@ -31,8 +29,6 @@ struct stat getFileInfo(char* filePath, struct stat file_info){
   }
   return file_info;
 }
-
-//
 
 int isBMP(int fin){
   off_t offset = 0;
@@ -60,7 +56,6 @@ int getFileType(mode_t sMode, int fin){
   return 4;
 }
 
-//
 
 int tryToOpenFile(char* filePath){
   int fin;
@@ -223,7 +218,6 @@ void printDirInfo(char* filePath, struct stat file_info, mode_t sMode, int fout)
   printOthersPermissions(sMode, fout);
 }
 
-//
 void printSymbLinkInfo(char* filePath, struct stat file_info, mode_t sMode, int fout){
   printFileName(filePath, fout);
    struct stat tmp;
@@ -240,19 +234,15 @@ void printSymbLinkInfo(char* filePath, struct stat file_info, mode_t sMode, int 
   printGroupPermissions(sMode, fout);
   printOthersPermissions(sMode, fout);
 }
-//
 
 void duplicateBMP(int fin, char* filePath){
   int fout, r;
   fout = tryToOpenOutputFile(filePath);
   char buffer[BUFFSIZE];
-
   lseek(fin, 0, SEEK_SET);
-
   while((r = read(fin, buffer, 8)) > 0){
     printToX(fout, buffer, r);
   }
-
   close(fout);
 }
 
@@ -393,43 +383,215 @@ DIR *tryToOpenDir(char* dirPath){
   return tmp;
 }
 
-//
+char *readFile(const char *filename) {
+    int fileDescriptor = open(filename, O_RDONLY);
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        return NULL;
+    }
+
+    // Determine the file size
+    off_t fileSize = lseek(fileDescriptor, 0, SEEK_END);
+    lseek(fileDescriptor, 0, SEEK_SET);  // Rewind to the beginning
+
+    // Allocate memory for the file content
+    char *content = (char *)malloc(fileSize + 1);  // +1 for the null terminator
+    if (content == NULL) {
+        perror("Error allocating memory for file content");
+        close(fileDescriptor);
+        return NULL;
+    }
+
+    // Read the file content
+    ssize_t bytesRead = read(fileDescriptor, content, fileSize);
+    if (bytesRead != fileSize) {
+        perror("Error reading file");
+        free(content);
+        close(fileDescriptor);
+        return NULL;
+    }
+
+    // Null-terminate the content
+    content[fileSize] = '\0';
+
+    close(fileDescriptor);
+    return content;
+}
+
 void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
   struct dirent *dir_entry;
-  int pid[LIMITPROCESS], i=0, numberOfLinesWritten;
+  struct stat file_info;
+  mode_t sMode;
+  char outputName[2*BUFFSIZE], buffer[BUFFSIZE-50];
+  int pid, pid2, numberOfLinesWritten=0, fin, fout, sum=0;
+
   checkNrOfArguments(argc);
 
   while((dir_entry = readdir(dir_path)) != NULL){
-    char entry_path[BUFFSIZE], output_path[BUFFSIZE];
+    char entry_path[BUFFSIZE];
     sprintf(entry_path, "%s/%s", dir_name, dir_entry->d_name);
-    sprintf(output_path, "%s/%s", dir_name, dir_entry->d_name);
-    if((pid[i] = fork()) < 0){
-      perror("Ops, it looks like we can't create the process!");
-      exit(errno);
-    }
-    if(pid[i] == 0){
-      numberOfLinesWritten = printFileInfo(entry_path, dirOut_path);
-      exit(numberOfLinesWritten);
+
+    file_info = getFileInfo(entry_path, file_info);
+    sMode = file_info.st_mode;
+    fin = tryToOpenFile(entry_path);
+
+    extractFilePath(entry_path, buffer);
+    sprintf(outputName, "%s/%s_statistica.txt",dirOut_path, buffer);
+    fout = tryToOpenOutputFile(outputName);
+
+    int type = getFileType(sMode, fin);
+    if(type == 1){
+      if((pid = fork()) < 0){
+        perror("Ops, it looks like we can't create the process!");
+        exit(errno);
+      }
+      if(pid == 0){
+        numberOfLinesWritten = 10;
+        printBMPInfo(entry_path, fin, file_info, sMode, fout);
+        exit(numberOfLinesWritten);
+      }
+      else{
+        if((pid2 = fork()) < 0){
+          perror("Ops, it looks like we can't create the process!");
+          exit(errno);
+        }
+        if(pid2 == 0){
+          char buffer1[2*BUFFSIZE];
+          sprintf(buffer1, "%s/%s_duplicate.bmp",dirOut_path, buffer);
+          int fin2 = tryToOpenFile(entry_path);
+          duplicateBMP(fin2, buffer1);
+          convertToGrayscale(buffer1);
+          exit(0);
+        }
+      }
     }
 
-    i++;
-  }
+    else if (type == 0) {
+    int son1_to_son2[2], son2_to_parent[2];
+
+    // Create pipes
+    if (pipe(son1_to_son2) == -1 || pipe(son2_to_parent) == -1) {
+        perror("Error creating pipes");
+        exit(EXIT_FAILURE);
+    }
+
+    if ((pid = fork()) < 0) {
+        perror("Error forking son1 process");
+        exit(errno);
+    }
+
+    if (pid == 0) {
+        // Code for son1
+        // Close unused ends of pipes
+        close(son1_to_son2[0]);
+        close(son2_to_parent[0]);
+        close(son2_to_parent[1]);
+
+        
+
+        numberOfLinesWritten = 8;
+        printRegFileInfo(entry_path, file_info, sMode, fout);
+
+        char *fileContent;
+        fileContent = readFile(entry_path);
+
+        write(son1_to_son2[1], fileContent, strlen(fileContent) + 1);
+        free(fileContent);
+        // Close the write end of the pipe_son1_to_son2
+        close(son1_to_son2[1]);
+
+        exit(numberOfLinesWritten);
+    } else {
+        if ((pid2 = fork()) < 0) {
+            perror("Error forking son2 process");
+            exit(errno);
+        }
+
+        if (pid2 == 0) {
+            // Code for son2
+
+            // Close unused ends of pipes
+            close(son1_to_son2[1]);
+            close(son2_to_parent[0]);
+
+            // Redirect stdin to read from the pipe
+            dup2(son1_to_son2[0], 0);
+            close(son1_to_son2[0]);
+
+            // Redirect stdout to write to the pipe
+            dup2(son2_to_parent[1], 1);
+            close(son2_to_parent[1]);
+
+            execlp("/home/faby/OSProject/OS-Project/checkLine.sh", "/home/faby/OSProject/OS-Project/checkLine.sh", "c", NULL);
+            perror("Error executing checkLine.sh script");
+            exit(-1);
+        }
+
+        // Close unused ends of pipes
+        close(son1_to_son2[0]);
+        close(son1_to_son2[1]);
+        close(son2_to_parent[1]);
+
+        // Read data from son2 through the pipe
+        char buffer_parent[256];
+        int number_from_buffer;
+        int n = read(son2_to_parent[0], buffer_parent, sizeof(buffer_parent));
+        buffer_parent[n] = '\0';
+        number_from_buffer = atoi(buffer_parent);
+        // Close the read end of the pipe_son2_to_parent
+        close(son2_to_parent[0]);
+
+        printf("Parent process has finished.\n");
+        sum = sum + number_from_buffer;
+        //printf("Au fost identificate in total %d propozitii corecte care contin caracterul %c\n", number_from_buffer, 'c');
+
+    }
+
+    close(fout);
+    close(fin);
+}
+
+    else if(type == 2){
+      if((pid = fork()) < 0){
+        perror("Ops, it looks like we can't create the process!");
+        exit(errno);
+      }
+      if(pid == 0){
+        numberOfLinesWritten = 5;
+        printDirInfo(entry_path, file_info, sMode, fout);
+        exit(numberOfLinesWritten);
+      }
+    }
+    else if(type == 3){
+      if((pid = fork()) < 0){
+        perror("Ops, it looks like we can't create the process!");
+        exit(errno);
+      }
+      if(pid == 0){
+        numberOfLinesWritten = 6;
+        printSymbLinkInfo(entry_path, file_info, sMode, fout);
+        exit(numberOfLinesWritten);
+      }
+    }
+    else{};
+
+    close(fout);
+    close(fin);    
+  } 
 
   int status;
-  for(int j=0; j<i; j++){
-    int fiu = wait(&status);
-    if(fiu < 0){
-      perror("..");
-      exit(errno);
-    }
+  int fiu;
+  while((fiu = wait(&status)) > 0){
     if(WIFEXITED(status)){
       printf("S-a incheiat procesul cu pid-ul %d si codul %d\n", fiu, WEXITSTATUS(status));
     }
   }
 
+   printf("Au fost identificate in total %d propozitii corecte care contin caracterul %c\n", sum, 'c');
+
   closedir(dir_path);
 }
-//
+
 
 int main(int argc, char* argv[]){
 

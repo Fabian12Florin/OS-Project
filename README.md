@@ -17,4 +17,4 @@ gcc -Wall -o fis1 fis1.c -lm
 ```
 ## Don't be hungry!
 ![Spaghetti photo not loaded :(](ImagesReadMe/Spaghetti.jpeg)
-I know this is one of the most spaghetti-code ever created. I promise I will refactor and will divide the code into multiples libraries.
+I know this is one of the most spaghetti-code ever created, have fun!
