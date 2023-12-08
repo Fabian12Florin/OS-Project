@@ -26,6 +26,11 @@ gcc -Wall -o fis1 fis1.c -lm
 ./fis1 Directory OutputDirectory
 ```
 ## Don't be hungry!
-![Spaghetti photo not loaded :(](ImagesReadMe/Spaghetti.jpeg)
-I know this is one of the most spaghetti-code ever created, have fun!
-=======
+<img
+  src="ImagesReadMe/Spaghetti.jpeg"
+  alt="Spaghetti photo not loaded :("
+  title="Monster"
+  style="display: inline-block; margin-left: auto; margin-right: auto; width: 50%;">
+
+
+I know this is one of the most spaghetti-code ever created. Have fun!

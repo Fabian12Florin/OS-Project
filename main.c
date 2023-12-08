@@ -330,50 +330,6 @@ void extractFilePath(char* filePath, char* buffer){
   }
 }
 
-int printFileInfo(char* filePath, char* outputPath){
-  int fin, fout, numberOfLinesWritten=0;
-  struct stat file_info;
-  mode_t sMode;
-  char outputName[BUFFSIZE], buffer[BUFFSIZE-50];
-
-  file_info = getFileInfo(filePath, file_info);
-  sMode = file_info.st_mode;
-  fin = tryToOpenFile(filePath);
-
-  extractFilePath(filePath, buffer);
-  sprintf(outputName, "%s/%s_statistica.txt",outputPath, buffer);
-  fout = tryToOpenOutputFile(outputName);
-
-  int type = getFileType(sMode, fin);
-  if(type == 1){
-    char buffer1[BUFFSIZE];
-    sprintf(buffer1, "%s/%s_duplicate.bmp",outputPath, buffer);
-    duplicateBMP(fin, buffer1);
-    convertToGrayscale(buffer1);
-    
-    printBMPInfo(filePath, fin, file_info, sMode, fout);
-    numberOfLinesWritten = 10;
-  }
-  else if(type == 0){
-    printRegFileInfo(filePath, file_info, sMode, fout);
-    numberOfLinesWritten = 8;
-  }
-  else if(type == 2){
-    printDirInfo(filePath, file_info, sMode, fout);
-    numberOfLinesWritten = 5;
-  }
-  else if(type == 3){
-    printSymbLinkInfo(filePath, file_info, sMode, fout);
-    numberOfLinesWritten = 6;
-  }
-  else{};
-
-  close(fout);
-  close(fin);
-  return numberOfLinesWritten;
-}
-
-
 DIR *tryToOpenDir(char* dirPath){
   DIR *tmp;
   if((tmp = opendir(dirPath)) == NULL){
@@ -418,46 +374,45 @@ char *readFile(const char *filename) {
     return content;
 }
 
-void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
+void crossDir(DIR* dir_path, char *dir_name, char* dirOut_path, char* character){
   struct dirent *dir_entry;
   struct stat file_info;
   mode_t sMode;
-  char outputName[2*BUFFSIZE], buffer[BUFFSIZE-50];
   int pid, pid2, numberOfLinesWritten=0, fin, fout, sum=0;
-
-  checkNrOfArguments(argc);
 
   while((dir_entry = readdir(dir_path)) != NULL){
     char entry_path[BUFFSIZE];
+    char outputName[BUFFSIZE];
     sprintf(entry_path, "%s/%s", dir_name, dir_entry->d_name);
-
-    file_info = getFileInfo(entry_path, file_info);
-    sMode = file_info.st_mode;
     fin = tryToOpenFile(entry_path);
-
-    extractFilePath(entry_path, buffer);
-    sprintf(outputName, "%s/%s_statistica.txt",dirOut_path, buffer);
+    sprintf(outputName, "%s/%s_statistica.txt",dirOut_path, dir_entry->d_name);
     fout = tryToOpenOutputFile(outputName);
 
+    //get type of file
+    file_info = getFileInfo(entry_path, file_info);
+    sMode = file_info.st_mode;
     int type = getFileType(sMode, fin);
+
     if(type == 1){
       if((pid = fork()) < 0){
-        perror("Ops, it looks like we can't create the process!");
+        perror("Oops, it looks like we can't create the process!");
         exit(errno);
       }
       if(pid == 0){
+        //this process will make the statistics file
         numberOfLinesWritten = 10;
         printBMPInfo(entry_path, fin, file_info, sMode, fout);
         exit(numberOfLinesWritten);
       }
       else{
         if((pid2 = fork()) < 0){
-          perror("Ops, it looks like we can't create the process!");
+          perror("Oops, it looks like we can't create the process!");
           exit(errno);
         }
         if(pid2 == 0){
+          //this is the second process and will make a duplicate of the BMP and then convert it to grayscale 
           char buffer1[2*BUFFSIZE];
-          sprintf(buffer1, "%s/%s_duplicate.bmp",dirOut_path, buffer);
+          sprintf(buffer1, "%s/%s_duplicate.bmp",dirOut_path, dir_entry->d_name);
           int fin2 = tryToOpenFile(entry_path);
           duplicateBMP(fin2, buffer1);
           convertToGrayscale(buffer1);
@@ -507,7 +462,6 @@ void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
 
         if (pid2 == 0) {
             // Code for son2
-
             // Close unused ends of pipes
             close(son1_to_son2[1]);
             close(son2_to_parent[0]);
@@ -520,7 +474,7 @@ void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
             dup2(son2_to_parent[1], 1);
             close(son2_to_parent[1]);
 
-            execlp("/home/faby/OSProject/OS-Project/checkLine.sh", "/home/faby/OSProject/OS-Project/checkLine.sh", "c", NULL);
+            execlp("/home/faby/OSProject/OS-Project/checkLine.sh", "/home/faby/OSProject/OS-Project/checkLine.sh", character, NULL);
             perror("Error executing checkLine.sh script");
             exit(-1);
         }
@@ -585,8 +539,7 @@ void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
     }
   }
 
-   printf("Au fost identificate in total %d propozitii corecte care contin caracterul %c\n", sum, 'c');
-
+   printf("Au fost identificate in total %d propozitii corecte care contin caracterul %s\n", sum, character);
   closedir(dir_path);
 }
 
@@ -598,7 +551,7 @@ checkNrOfArguments(argc);
 DIR *dir_path;
 dir_path = tryToOpenDir(argv[1]);
 tryToOpenDir(argv[2]);
-crossDir(dir_path, argv[1], argc, argv[2]);
+crossDir(dir_path, argv[1], argv[2], argv[3]);
 
 return 0;
 }

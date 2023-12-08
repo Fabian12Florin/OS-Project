@@ -20,4 +20,4 @@ while IFS= read -r line; do
 done
 
 echo -e "$count"
-exit 0
+exit 1
