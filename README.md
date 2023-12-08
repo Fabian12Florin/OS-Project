@@ -27,7 +27,7 @@ gcc -Wall -o fis1 fis1.c -lm
 ```
 ## Don't be hungry!
 <img
-  src="ImagesReadMe/Spaghetti.jpeg"
+  src="ImageForReadMe/Spaghetti.jpeg"
   alt="Spaghetti photo not loaded :("
   title="Monster"
   style="display: inline-block; margin-left: auto; margin-right: auto; width: 50%;">
