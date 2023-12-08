@@ -1,9 +1,0 @@
-un program c care se apeleaza sub ur forma:
-./fis <c> path.txt
-file path se verifica ca e un fisier obisnuit
-programul verifica primirea a exact doua argumente
-
-Un proces parinte care creeaza doua procese fiu
-Primul proces fiu genereaza continutul din path si il transmite celui de al doilea fiu prin pipe.
-Cel de al doilea fiu calculeaza din ce a primit de la fiiul nr 1 totalitatea aparitiilor caracterului dat ca si argument si transmite printr-un pipe nr obtinut parintelui
-Parintele afiseaza pe ecran nr primit de la fiul 2 si afiseaza mesajul:  Procesul fiul cu pid-ul s-a incheiat cu codul

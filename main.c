@@ -487,8 +487,6 @@ void crossDir(DIR* dir_path, char *dir_name, int argc, char* dirOut_path){
         close(son2_to_parent[0]);
         close(son2_to_parent[1]);
 
-        
-
         numberOfLinesWritten = 8;
         printRegFileInfo(entry_path, file_info, sMode, fout);
 
